@@ -19,44 +19,92 @@ const Modal = {
 
 } 
 
-const transactions = [
-    {
-        id:1,
-        description: 'Luz',
-        amount:-500,
-        date:'28/04/2021'
-    },
-
-    {
-        id:2,
-        description: 'Criação de website',
-        amount: 500000,
-        date:'28/04/2021'
-    },
-
-    {
-        id:3,
-        description: 'Internet ',
-        amount:-20000,
-        date:'28/04/2021'
-    },
-    {
-        id:4,
-        description: 'Netflix',
-        amount:-20,
-        date:'28/04/2021'
-    }
-]
-
 const Transaction = {
+    all: [
+        {
+            description: 'Luz',
+            amount:-500,
+            date:'28/04/2021'
+        },
+    
+        {
+    
+            description: 'Criação de website',
+            amount: 500000,
+            date:'28/04/2021'
+        },
+    
+        {
+            description: 'Internet ',
+            amount:-20000,
+            date:'28/04/2021'
+        },
+    
+        {
+            description: 'Projetos',
+            amount:200000,
+            date:'28/04/2021'
+        },
+    
+        {   description: 'casamento',
+            amount:-3000000,
+            date:'28/04/2021'
+        }
+    ],
+    add(transaction){
+        Transaction.all.push(transaction)
+        App.reload()
+    },
+
+    remove (index) {
+
+        Transaction.all.splice(index,1)
+
+        App.reload ()
+
+    },
+    
     incomes (){
-        // somar as entradas
+        let income = 0;
+        // pegar todas as transações
+        // para cada transação,
+        Transaction.all.forEach(transaction=> {
+        // se for maior que zero 
+           if (transaction.amount > 0 ) {
+        // somar a uma variavel e retornar a variavel 
+        income += transaction.amount;
+           }
+        
+        })
+         
+      
+       
+        return income;
+
     },
+
     expenses () {
-        // somar as saídas
+
+            let expense = 0;
+            // pegar todas as transações
+            // para cada transação,
+            Transaction.all.forEach(transaction=> {
+            // se for maior que zero 
+               if (transaction.amount < 0 ) {
+            // somar a uma variavel e retornar a variavel 
+            expense+= transaction.amount;
+               }
+            
+            })
+             
+           return expense;
+        
+
     },
+
     total () {
         // entradas - saídas
+        return Transaction.incomes() +  Transaction.expenses();
     }
 }
 
@@ -80,7 +128,7 @@ const DOM = {
         const html = `
         
             <td class="description">${transaction.description}</td>
-            <td class="${CSSclass}">${transaction.amount}</td>
+            <td class="${CSSclass}">${amount}</td>
             <td class="date">${transaction.date}</td>
             <td>
             <img src="./assets/minus.svg" alt="Remover transação">
@@ -88,19 +136,94 @@ const DOM = {
         `
         return html
 
+    },
+     updateBalance(){
+        document
+        .getElementById ('incomeDisplay')
+        .innerHTML = Utils.formatCurrency(Transaction.incomes())
+
+        document
+        .getElementById ('expenseDisplay')
+        .innerHTML = Utils.formatCurrency(Transaction.expenses())
+
+        document
+        .getElementById ('totalDisplay')
+        .innerHTML = Utils.formatCurrency(Transaction.total())
+
+    },
+
+    clearTransactions() {
+        DOM.transactionsContainer.innerHTML = ""
     }
 }
 
 const Utils = {
     formatCurrency (value) {
-       const signal = Number(value) < 0 ? "-": ""
+        const signal = Number(value) < 0 ? "-": ""
+        value = String (value).replace(/\D/g, "")
+
+        value = Number(value) / 100
+
+        value = value.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL"
+
+        })
+
+
+      return signal + value
     }
 }
 
+const Form= {
+    description: document.querySelector ('input#description'),
+    amount: document.querySelector ('input#amount'),
+    date: document.querySelector ('input#date'),
 
-transactions.forEach(function(transaction){
-    DOM.addTransaction(transaction)
+    getValues () {
+        return {
+        description: Form.description.value,
+        amount: Form.amount.value,
+        date: Form.date.value
+    }
 
-})
+    },
 
+    validateFields() {  
+          
+        console.log(Form.getValues());
+    },
+
+    submit(event){ 
+          event.preventDefault()
+          // Verificar se todas as informações foram preenchidas
+         Form.validateFields ()
+         // formatar os dados para salvar
+        //  Form.formatData ()
+         // salvar 
+         // apagar os dados do formulário
+         // modal feche 
+         // atualizar a aplicação
+    } 
+}
+
+const App = {
+    init (){
+
+        Transaction.all.forEach(transaction => {
+            DOM.addTransaction(transaction)
+        
+        })
+        
+        DOM.updateBalance()
+    },
+
+    reload (){
+        DOM.clearTransactions()
+        App.init ()
+    },
+}
+
+App.init ()
+      
 
